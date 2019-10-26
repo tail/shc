@@ -25,6 +25,8 @@ import scala.collection.mutable
 import scala.language.existentials
 import scala.util.control.NonFatal
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hbase.security.token.{AuthenticationTokenIdentifier, TokenUtil}
 import org.apache.hadoop.io.DataOutputBuffer
@@ -62,7 +64,8 @@ final class SHCCredentialsManager private() extends Logging {
   }
 
   val tokenUpdateExecutor = Executors.newSingleThreadScheduledExecutor(
-    ThreadUtils.namedThreadFactory("HBase Tokens Refresh Thread"))
+    new ThreadFactoryBuilder().setDaemon(true).setNameFormat("HBase Tokens Refresh Thread-%d").build()
+  )
 
   // If SHCCredentialsManager is enabled, start an executor to update tokens
   if (credentialsManagerEnabled) {
